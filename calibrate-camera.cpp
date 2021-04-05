@@ -17,8 +17,8 @@
 int main(int argc, char** argv)
 {
 	// Variables and their default values.
-	int checkerboardWidth = 9;
-	int checkerboardHeight = 6;
+	int checkerboardWidth = 7;
+	int checkerboardHeight = 7;
 	int squareSizeMM = 20;	// I didn't have a ruler to measure.
 	int numPics = 16;
 	int cornerSubPix_winSize = 11;
