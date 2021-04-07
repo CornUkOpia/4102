@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import copy
+import matplotlib as mpl
 from matplotlib import pyplot as plt
 import os
 import glob
@@ -26,11 +27,11 @@ def featuringMatchingBetweenImages(img1,img2,index):
     # Sort them in the order of their distance.
     matches = sorted(matches, key = lambda x:x.distance)
     
-    img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches[:200],None,flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches[:100],None,flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
     finalTitle = "featureMatched/" + str(i) + "-" + str((i + 1) % len(os.listdir("outputImages"))) + ".jpg"
     cv2.imwrite(finalTitle,img3)
-    src_pts = np.float32([ kp1[matches[m].queryIdx].pt for m in range(0, 200) ]).reshape(-1,1,2)
-    dst_pts = np.float32([ kp2[matches[m].trainIdx].pt for m in range(0, 200) ]).reshape(-1,1,2)
+    src_pts = np.float32([ kp1[matches[m].queryIdx].pt for m in range(0, 100) ]).reshape(-1,1,2)
+    dst_pts = np.float32([ kp2[matches[m].trainIdx].pt for m in range(0, 100) ]).reshape(-1,1,2)
 
     return src_pts, dst_pts
 
@@ -108,12 +109,20 @@ for i in range(0,len(os.listdir("outputImages"))):
     if essentialMatrix is None:
         continue;
     else:
+        
+        ProjectionMatrix1 = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0]])
         retval, R, t, mask = cv2.recoverPose(essentialMatrix,img1Points,img2Points,K)
-        print("retval")
-        print(retval)
-        print("R")
-        print(R)
-        print("t")
-        print(t)
-        print("mask")
-        print(mask)
+        ProjectionMatrix2 = np.concatenate((np.dot(K,R),np.dot(K,t)),axis = 1)
+       
+        undistorted1 = cv2.undistortPoints(img1Points,K,distCoeffs=None)
+        undistorted2 = cv2.undistortPoints(img2Points,K,distCoeffs=None)
+        triangulatedPoints = cv2.triangulatePoints(ProjectionMatrix1,ProjectionMatrix2,undistorted1,undistorted2)
+        print("___________________________________")
+        triangulatedPoints = triangulatedPoints[:3]
+        print(triangulatedPoints.shape)
+        print(len(triangulatedPoints))
+        print(triangulatedPoints)
+        fig = plt.figure()
+        ax = plt.axes(projection="3d")
+        ax.scatter3D(triangulatedPoints[0],triangulatedPoints[1],triangulatedPoints[2])
+        plt.savefig("temp"+ str(i) +".png")
