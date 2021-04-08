@@ -117,10 +117,10 @@ for i in range(0,len(os.listdir("outputImages"))):
     
     img1Points, img2Points = featuringMatchingBetweenImages(img1,img2,i)
     # Filter the outliers.
-    for i in range(len(img1Points)):
-        img1Points[i] = img1Points[i] if mask[i].ravel() == 1 else 0
-    for i in range(len(img2Points)):
-        img2Points[i] = img2Points[i] if mask[i].ravel() == 1 else 0
+    for j in range(len(img1Points)):
+        img1Points[j] = img1Points[j] if mask[j].ravel() == 1 else 0
+    for j in range(len(img2Points)):
+        img2Points[j] = img2Points[j] if mask[j].ravel() == 1 else 0
     essentialMatrix, otherThingy = cv2.findEssentialMat(img1Points,img2Points,K)
     if essentialMatrix is None:
         continue;
@@ -139,8 +139,8 @@ for i in range(0,len(os.listdir("outputImages"))):
         ProjectionMatrix2 = np.matmul(K, R_t_1)
        
         triangulatedPoints = cv2.triangulatePoints(ProjectionMatrix1,ProjectionMatrix2,undistorted1,undistorted2)
-        print(triangulatedPoints[3])
-        triangulatedPoints /= triangulatedPoints[3]
+        #print(triangulatedPoints[3])
+        #triangulatedPoints /= triangulatedPoints[3]
 
         ProjectionMatrix1 = np.copy(ProjectionMatrix2)
 
@@ -153,11 +153,24 @@ for i in range(0,len(os.listdir("outputImages"))):
         #print(triangulatedPoints)
         fig = plt.figure()
         ax = plt.axes(projection="3d")
-        ax.scatter3D(triangulatedPoints[0],triangulatedPoints[1],triangulatedPoints[2])
+        #ax.set_autoscale_on(False)
+        #ax.set_xlim3d([0.0, 0.5])
+        #ax.set_zlim3d([0.45, 0.5])
+        #ax.set_ylim3d([-0.86, 0.00005])
+        ax.set_xlabel("X")
+        ax.set_ylabel("Z")
+        ax.set_zlabel("Y")
+        ax.scatter3D(triangulatedPoints[0], triangulatedPoints[2], triangulatedPoints[1])
         plt.savefig("graphs/temp"+ str(i) +".png")
         plt.close()
 fig = plt.figure()
 ax = plt.axes(projection="3d")
-ax.scatter3D(allPointsX, allPointsY, allPointsZ)
+ax.set_xlim3d([np.average(allPointsX) - 2*np.std(allPointsX), np.average(allPointsX) + 2*np.std(allPointsX)])
+ax.set_ylim3d([np.average(allPointsY) - 2*np.std(allPointsY), np.average(allPointsY) + 2*np.std(allPointsY)])
+ax.set_zlim3d([np.average(allPointsZ) - 2*np.std(allPointsZ), np.average(allPointsZ) + 2*np.std(allPointsZ)])
+ax.set_xlabel("X")
+ax.set_ylabel("Z")
+ax.set_zlabel("Y")
+ax.scatter3D(allPointsX, allPointsZ, allPointsY)
 plt.savefig("./pointcloud.png")
 plt.close()
