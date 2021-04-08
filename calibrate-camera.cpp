@@ -110,9 +110,7 @@ int main(int argc, char** argv)
 		double rmsReprojError = cv::calibrateCameraRO(objectPoints, boardPoints, imageSize, checkerboardWidth - 1, cameraMatrix,
 								distortionCoeffs, rvecs, tvecs, newObjPoints, 0);
 
-		// Print the camera's intrinsic parameter matrix, then write it to a file.
-		// I'm pretty sure that's the only matrix we need, but no big deal if not; I'll just change the code to export the rest
-		// too if they're needed.
+		// Print the camera's intrinsic parameter matrix and the distortion coefficients, then write it to a file.
 		std::cout << "Camera matrix:\nK = ";
 		for (j = 0; j < cameraMatrix.rows; j++)
 		{
@@ -122,9 +120,19 @@ int main(int argc, char** argv)
 			}
 			std::cout << "\n";
 		}
+		std::cout << "Distortion coefficients:\ndistCoeffs = ";
+		for (j = 0; j < distortionCoeffs.rows; j++)
+		{
+			for (i = 0; i < cameraMatrix.cols; i++)
+			{
+				std::cout << "\t" << distortionCoeffs.at<double>(j, i);
+			}
+			std::cout << "\n";
+		}
 		std::cout << "RMS reprojection error: " << rmsReprojError << "\n";
 		cv::FileStorage calibFile(CALIB_FILENAME, cv::FileStorage::WRITE);
 		calibFile << "camera_K" << cameraMatrix;
+		calibFile << "camera_distCoeffs" << distortionCoeffs;
 		calibFile.release();
 	}
 	

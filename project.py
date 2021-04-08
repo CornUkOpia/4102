@@ -43,8 +43,8 @@ def compute_camera_matrix(image1,image2):
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
     matches = bf.match(des1,des2)
     matches = sorted(matches, key = lambda x:x.distance)
-    src_pts = np.float32([ kp1[matches[m].queryIdx].pt for m in range(0, 20) ]).reshape(-1,1,2)
-    dst_pts = np.float32([ kp2[matches[m].trainIdx].pt for m in range(0, 20) ]).reshape(-1,1,2)
+    src_pts = np.float32([ kp1[matches[m].queryIdx].pt for m in range(0, 100) ]).reshape(-1,1,2)
+    dst_pts = np.float32([ kp2[matches[m].trainIdx].pt for m in range(0, 100) ]).reshape(-1,1,2)
     src_pts = np.asarray(src_pts)
     dst_pts = np.asarray(dst_pts)
     F, mask = cv2.findFundamentalMat(src_pts,dst_pts,cv2.FM_RANSAC)
@@ -52,6 +52,10 @@ def compute_camera_matrix(image1,image2):
 
 detector = cv2.ORB_create()
 K = [[1022.5,0,273.648],[0,1004.33,618.487],[0,0,1]]
+K = np.asanyarray(K, np.float32)
+distCoeffs = [[0.291851, -2.51515, -0.0582267, 0.0035612, 6.9084575]]
+distCoeffs = np.asanyarray(distCoeffs, np.float32)
+
 if not os.path.exists('outputImages'):
     os.makedirs('outputImages')
 else:
@@ -82,10 +86,17 @@ cv2.destroyAllWindows()
 #for i in range(0,1):
     #identityMatrix = np.array([[1,0,0,0], [0,1,0,0], [0,0,1,0]])
    # emptyMatrix = np.empty((3,4))
+allPointsX = []
+allPointsY = []
+allPointsZ = []
+R_t_0 = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0]])	# FIXME: Taken from existing code, just as a test. Recreate this.
+R_t_1 = np.empty((3,4))					# FIXME: Taken from existing code, just as a test. Recreate this.
+ProjectionMatrix1 = np.matmul(K, R_t_0)			# FIXME: Taken from existing code, just as a test. Recreate this.
+ProjectionMatrix2 = np.empty((3,4))			# FIXME: Taken from existing code, just as a test. Recreate this.
 for i in range(0,len(os.listdir("outputImages"))):
     title1Str = "outputImages/" + str(i) + ".jpg"
     title2Str = "outputImages/" + str((i + 1) % len(os.listdir("outputImages"))) + ".jpg"
-    K, mask = compute_camera_matrix(cv2.imread(title1Str,0),cv2.imread(title2Str,0))  
+    F, mask = compute_camera_matrix(cv2.imread(title1Str,0),cv2.imread(title2Str,0))  
     print(title1Str,title2Str)
     
     img1 = cv2.imread(title1Str,-1)     
@@ -105,24 +116,48 @@ for i in range(0,len(os.listdir("outputImages"))):
     img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
     
     img1Points, img2Points = featuringMatchingBetweenImages(img1,img2,i)
+    # Filter the outliers.
+    for i in range(len(img1Points)):
+        img1Points[i] = img1Points[i] if mask[i].ravel() == 1 else 0
+    for i in range(len(img2Points)):
+        img2Points[i] = img2Points[i] if mask[i].ravel() == 1 else 0
     essentialMatrix, otherThingy = cv2.findEssentialMat(img1Points,img2Points,K)
     if essentialMatrix is None:
         continue;
     else:
-        
-        ProjectionMatrix1 = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0]])
         retval, R, t, mask = cv2.recoverPose(essentialMatrix,img1Points,img2Points,K)
-        ProjectionMatrix2 = np.concatenate((np.dot(K,R),np.dot(K,t)),axis = 1)
+
+        undistorted1 = cv2.undistortPoints(img1Points,K,distCoeffs=distCoeffs)
+        undistorted2 = cv2.undistortPoints(img2Points,K,distCoeffs=distCoeffs)
+
+        #ProjectionMatrix1 = np.array([[1,0,0,0],[0,1,0,0],[0,0,1,0]])
+        #ProjectionMatrix2 = np.concatenate((np.dot(K,R),np.dot(K,t)),axis = 1)
+        # FIXME: Taken from existing code, just as a test. Recreate this.
+        R_t_1[:3,:3] = np.matmul(R, R_t_0[:3,:3])
+        R_t_1[:3, 3] = R_t_0[:3, 3] + np.matmul(R_t_0[:3,:3], t.ravel())
+        R_t_0 = np.copy(R_t_1)
+        ProjectionMatrix2 = np.matmul(K, R_t_1)
        
-        undistorted1 = cv2.undistortPoints(img1Points,K,distCoeffs=None)
-        undistorted2 = cv2.undistortPoints(img2Points,K,distCoeffs=None)
         triangulatedPoints = cv2.triangulatePoints(ProjectionMatrix1,ProjectionMatrix2,undistorted1,undistorted2)
+        print(triangulatedPoints[3])
+        triangulatedPoints /= triangulatedPoints[3]
+
+        ProjectionMatrix1 = np.copy(ProjectionMatrix2)
+
         print("___________________________________")
-        triangulatedPoints = triangulatedPoints[:3]
-        print(triangulatedPoints.shape)
-        print(len(triangulatedPoints))
-        print(triangulatedPoints)
+        allPointsX.append(triangulatedPoints[0])
+        allPointsY.append(triangulatedPoints[1])
+        allPointsZ.append(triangulatedPoints[2])
+        #print(triangulatedPoints.shape)
+        #print(len(triangulatedPoints))
+        #print(triangulatedPoints)
         fig = plt.figure()
         ax = plt.axes(projection="3d")
         ax.scatter3D(triangulatedPoints[0],triangulatedPoints[1],triangulatedPoints[2])
-        plt.savefig("temp"+ str(i) +".png")
+        plt.savefig("graphs/temp"+ str(i) +".png")
+        plt.close()
+fig = plt.figure()
+ax = plt.axes(projection="3d")
+ax.scatter3D(allPointsX, allPointsY, allPointsZ)
+plt.savefig("./pointcloud.png")
+plt.close()
