@@ -5,7 +5,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 def featuringMatchingBetweenImages(img1,img2,index):
-    print(index)
     kp1, des1 = detector.detectAndCompute(img1,None)
     kp2, des2 = detector.detectAndCompute(img2,None)
 
@@ -29,7 +28,7 @@ def featuringMatchingBetweenImages(img1,img2,index):
     return src_pts, dst_pts
 
 detector = cv2.ORB_create()
-"""
+
 videoSource = Image.open("./cubeSpin.gif")
 i = 0
 for frame in ImageSequence.Iterator(videoSource):
@@ -49,7 +48,7 @@ while(True):
     else:
         break
 inputVideo.release()
-
+"""
 
 cameraMatrix = np.asarray([[1022.5,0,273.648],[0,1004.33,618.487],[0,0,1]])
 initial1 = cv2.imread("outputImages/0.png",0)
@@ -63,32 +62,54 @@ initialPoints1 = initialPoints1[mask.ravel() ==1]
 initialPoints2 = initialPoints2[mask.ravel() ==1]
 essentialMat = np.linalg.multi_dot([np.transpose(cameraMatrix),fundamentalMat,cameraMatrix])
 points, R, t, mask = cv2. recoverPose(essentialMat,initialPoints1,initialPoints2)
-M_r = np.hstack((R, t))
 M_l = np.hstack((np.eye(3, 3), np.zeros((3, 1))))
+M_r = np.hstack((R, t))
+print(M_l)
+print(M_r)
+print("")
 
 P_l = np.dot(cameraMatrix,  M_l)
 P_r = np.dot(cameraMatrix,  M_r)
+print(P_l)
+print(P_r)
+print("")
 
 # undistort points
 
-
 initialPoints1 = np.squeeze(initialPoints1)
 initialPoints2 = np.squeeze(initialPoints2)
+print(initialPoints1)
+print(initialPoints2)
+print("")
+
+vals1 = np.float32(initialPoints1.T)
+vals2 = np.float32(initialPoints2.T)
 
 #triangulate points this requires points in normalized coordinate
-point_4d_hom = cv2.triangulatePoints(P_l, P_r, initialPoints1.T, initialPoints2.T)
+point_4d_hom = cv2.triangulatePoints(P_l, P_r, vals1, vals2)
 print(point_4d_hom)
 
-point_3d = point_4d_hom / np.tile(point_4d_hom[-1, :], (4, 1))
+point_3d = point_4d_hom / point_4d_hom[3] #np.tile(point_4d_hom[-1, :], (4, 1))
 point_3d = point_3d[:3, :].T
+#print(point_3d)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.set_xlabel('X Label')
-ax.set_ylabel('Y Label')
-ax.set_zlabel('Z Label')
+ax.set_ylabel('Z Label')
+ax.set_zlabel('Y Label')
 
+X = []
+Y = []
+Z = []
 for x, y, z in point_3d:
-    ax.scatter(x, y, z, c="r", marker="o")
+    X.append(x)
+    Y.append(y)
+    Z.append(z)
+
+ax.scatter3D(X, Z, Y, c="r", marker="o")
+
+#for x, y, z in point_3d:
+#    ax.scatter(x, y, z, c="r", marker="o")
 
 plt.show()
 fig.savefig('3-D_0.jpg')
