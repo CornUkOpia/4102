@@ -60,11 +60,11 @@ cameraMatrix = np.asarray([[1022.5,0,273.648],[0,1004.33,618.487],[0,0,1]])
 X = []
 Y = []
 Z = []
-interval = 1
+interval = 2
 M_l = np.hstack((np.eye(3, 3), np.zeros((3, 1))))
 M_r = np.empty((3,4))
 fundamentalMat = []
-fundamentalMat2 = []
+fundamentalMatrices = []
 essentialMat = []
 for i in range(0, numImages-interval, interval):
     initial1 = cv2.imread("outputImages/" + str(i) + ".png",0)
@@ -79,28 +79,22 @@ for i in range(0, numImages-interval, interval):
     if i == 0:
         fundamentalMat, mask = cv2.findFundamentalMat(initialPoints1,initialPoints2,cv2.FM_RANSAC)
         fundamentalMat = fundamentalMat[:3,:3]  # Take only the first solution.
-    else:
-        fundamentalMat2, mask = cv2.findFundamentalMat(initialPoints1,initialPoints2,cv2.FM_RANSAC)
-        fundamentalMat2 = fundamentalMat2[:3,:3]  # Take only the first solution.
-        fundamentalMat = np.matmul(fundamentalMat, fundamentalMat2)
 
     initialPoints1 = initialPoints1[mask.ravel() == 1]
     initialPoints2 = initialPoints2[mask.ravel() == 1]
-    if i == 0:
-        essentialMat = np.linalg.multi_dot([np.transpose(cameraMatrix),fundamentalMat,cameraMatrix])
+    essentialMat = np.linalg.multi_dot([np.transpose(cameraMatrix),fundamentalMat,cameraMatrix])
     print("Fundamental and essential matrices:")
     print(fundamentalMat)
     print(essentialMat)
     print("")
 
-    # FIXME: The projections are the same! What the hell?
     points, R, t, mask = cv2.recoverPose(essentialMat,initialPoints1,initialPoints2)
     #M_r = np.hstack((R, t))
     M_r[:3,:3] = np.matmul(R, M_l[:3,:3])
     M_r[:3,3] = M_l[:3,3] + np.matmul(M_l[:3,:3], t.ravel())
     P_l = np.matmul(cameraMatrix,  M_l)
     P_r = np.matmul(cameraMatrix,  M_r)
-    M_l = M_r
+    M_l = np.copy(M_r)
     print("Previous and current projections:")
     print(P_l)
     print(P_r)
