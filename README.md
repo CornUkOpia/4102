@@ -21,10 +21,10 @@ OpenCV provides some functions to accomplish some necessary steps, such as edge 
 
 ## Goals and Deliverables
 What we plan to achieve:
-* Create a program that accepts a prerecorded video of an object and outputs a 3D model of it.\
+* Create a program that accepts a prerecorded video of an object and outputs a 3D model of it.
 
 What we hope to achieve:
-* Create a program that can take footage of an object and output a 3D model of it, withboth the recording and the model generating in real time.
+* Create a program that can take footage of an object and output a 3D model of it, with both the recording and the model generating in real time.
 
 Measuring success:
 * Success in this project will be measured in two ways: amount of time it takes to process and how accurate the resulting 3D model is.
