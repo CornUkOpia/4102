@@ -1,6 +1,8 @@
 # Generating the 3D Structures of Model Cars from Videos
 
-**NOTE**: What follows is the original project proposal. We had to take a radically different approach, that approach being Structure from Motion, because we realized our original method was not going to work. Unfortunately, the project still turned out to be unsuccessful, because we severely underestimated the difficulty of our task. Please also note that we did not adhere to our original schedule due to work in COMP4102 and other classes, and due to the above-mentioned shift in the project's direction.
+**TODO**: Add info on project dependencies, how to run it, and the expected results.
+
+**NOTE**: What follows is the original project proposal, and it is severely out of date. We had to take a radically different approach, that approach being Structure from Motion, because we realized our original method was not going to work. Unfortunately, the project still turned out to be unsuccessful, because we severely underestimated the difficulty of our task. Please also note that we did not adhere to our original schedule due to work in COMP4102 and other classes, and due to the above-mentioned shift in the project's direction.
 
 ## Team Members
 Gabriel Valachi (101068875)
