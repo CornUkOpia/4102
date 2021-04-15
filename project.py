@@ -29,7 +29,6 @@ def featuringMatchingBetweenImages(img1,img2,index, interval):
 
 detector = cv2.ORB_create()
 
-
 videoSource = Image.open("./cubeSpin.gif")
 i = 0
 for frame in ImageSequence.Iterator(videoSource):
@@ -80,8 +79,9 @@ for i in range(0, numImages-interval, interval):
         fundamentalMat, mask = cv2.findFundamentalMat(initialPoints1,initialPoints2,cv2.FM_RANSAC)
         fundamentalMat = fundamentalMat[:3,:3]  # Take only the first solution.
 
-    initialPoints1 = initialPoints1[mask.ravel() == 1]
-    initialPoints2 = initialPoints2[mask.ravel() == 1]
+    # Filter outliers. Disabled due to indexing problems I'm unsure how to fix.
+    #initialPoints1 = initialPoints1[mask.ravel() == 1]
+    #initialPoints2 = initialPoints2[mask.ravel() == 1]
     essentialMat = np.linalg.multi_dot([np.transpose(cameraMatrix),fundamentalMat,cameraMatrix])
     print("Fundamental and essential matrices:")
     print(fundamentalMat)
@@ -145,6 +145,8 @@ ax.set_ylabel("Z Label")
 ax.set_zlabel("Y Label")
 ax.scatter3D(X, Z, Y, c="r", marker="o")
 plt.show()
+fig.savefig("./point-cloud.png");
+plt.close()
 
 """
 for i in range(0,len(os.listdir("outputImages"))):
