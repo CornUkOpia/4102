@@ -1,6 +1,60 @@
-# Generating the 3D Structures of Model Cars from Videos
+# COMP4102A Final Project - Generating the 3D Structures of Model Cars from Videos
 
-**TODO**: Add info on project dependencies, how to run it, and the expected results.
+This is the repository for the COMP4102 final project, made by Alexander Cornish (101053176) and Gabriel Valachi (101068875).
+
+The final project writeup is in `FinalProjectWriteUp.pdf`, in the root directory.
+
+The presentation for the final presentation, presented by Alexander, is in `COMP4102PRES.mp4`.
+
+To see a demo of the 3D reconstruction code and the (not-very-impressive) results of that execution, check out `test-run.mp4`.
+
+## Running the Project Code
+
+`project.py` contains the 3D reconstruction code. To run it, you require Python 3 and the following dependencies:
+* OpenCV for Python (PIP: `opencv-python`)
+** Installed OpenCV libraries may also be needed
+* Numpy (PIP: `numpy`)
+* Matplotlib (PIP: `matplotlib`)
+* Pillow (PIP: `pillow`)
+
+To install a Python dependency with PIP, run `python -m pip install <package>`, where `<package>` is one of the package names following `PIP:` above.
+
+Run `project.py` like so:
+
+  `python project.py <source-video-or-gif> [frame-interval]`
+
+Arguments:
+* `<source-video-or-gif>` is the source video or GIF file from which to attempt to construct a 3D point cloud.
+* `[frame-interval]` is the number of frames skipped between images. For instance, an interval of 2 means the first image pair uses the first and third frames, the second image pair uses the third and fifth frames, and so on.
+
+Note the following files and directories:
+* `outputImages/` contains the image sequence generated from the input video.
+* `featureMatched/` contains the image pairs with features matched, for verification purposes.
+* `graphs/` contains the point clouds generated for each image pair.
+* `point-cloud.png` is the final point cloud. It should be generated in the same directory where you ran `project.py`.
+
+
+`calibrate-camera.cpp` contains the calibration code. To build it and run it, you need to have OpenCV installed on your system.
+
+To build it on Linux, run the following command:
+
+  `g++ -o calibrate-camera calibrate-camera.cpp /usr/bin/libopencv_*`
+
+Run the generated binary like so:
+
+  `./calibrate-camera`
+
+Executable takes no arguments.
+
+Values such as chessboard dimensions and number of calibration pictures are hardcoded in `calibrate-camera.cpp`.
+
+Note the following files and directories:
+* `calibPics/` contains the calibration pictures, each file being a picture of a chessboard taken at a different angle.
+* `calibPics_out/` contains the calibration pictures with the detected chessboard corners.
+* `calibMatrix.xml` contains the resulting camera matrix and distortion coefficients.
+
+
+# Proposal: Generating the 3D Structures of Model Cars from Videos
 
 **NOTE**: What follows is the original project proposal, and it is severely out of date. We had to take a radically different approach, that approach being Structure from Motion, because we realized our original method was not going to work. Unfortunately, the project still turned out to be unsuccessful, because we severely underestimated the difficulty of our task. Please also note that we did not adhere to our original schedule due to work in COMP4102 and other classes, and due to the above-mentioned shift in the project's direction.
 
