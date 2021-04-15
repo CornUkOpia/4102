@@ -10,6 +10,7 @@ To see a demo of the 3D reconstruction code and the (not-very-impressive) result
 
 ## Running the Project Code
 
+### project.py
 `project.py` contains the 3D reconstruction code. To run it, you require Python 3 and the following dependencies:
 * OpenCV for Python (PIP: `opencv-python`)
 ** Installed OpenCV libraries may also be needed
@@ -33,7 +34,7 @@ Note the following files and directories:
 * `graphs/` contains the point clouds generated for each image pair.
 * `point-cloud.png` is the final point cloud. It should be generated in the same directory where you ran `project.py`.
 
-
+### calibrate-camera.cpp
 `calibrate-camera.cpp` contains the calibration code. To build it and run it, you need to have OpenCV installed on your system.
 
 To build it on Linux, run the following command:
