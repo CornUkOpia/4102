@@ -1,4 +1,4 @@
-// Written in C++ because I find it a bit easier.
+// Written in C++ because I (Gabriel) find it a bit easier.
 
 #include <opencv4/opencv2/core.hpp>
 #include <opencv4/opencv2/core/mat.hpp>
